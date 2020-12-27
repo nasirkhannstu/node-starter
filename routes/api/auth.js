@@ -3,9 +3,24 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const config = require("config");
-const { check, validationResult } = require("express-validator/check");
+const auth = require('../../middleware/auth');
+const role = require('../../middleware/role');
+const { check, validationResult } = require("express-validator");
 
 const User = require("../../models/User");
+
+// @route    GET api/auth
+// @desc     Authenticated user
+// @access   Public
+router.get("/", auth, role("admin"), async (req, res) => {
+  try {
+    const user = await User.findById(req.user.id).select("-password");
+    res.json(user);
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send("server error");
+  }
+});
 
 // @route    POST api/auth
 // @desc     Authenticate user & get token
